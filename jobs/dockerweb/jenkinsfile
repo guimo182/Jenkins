@@ -19,9 +19,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        sudo chmod 666 /var/run/docker.sock
-                        sudo chown $(whoami) /var/run/docker.sock
-                        ls -l /var/run/docker.sock
+                        chmod 666 /var/run/docker.sock
+                        chown jenkins:docker /var/run/docker.sock
                     '''
                 }
             }
