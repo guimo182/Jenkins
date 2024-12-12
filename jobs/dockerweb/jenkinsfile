@@ -1,69 +1,71 @@
 pipeline {
-  agent any
+    agent any
 
-  parameters {
-    string(name: 'name_container', defaultValue: 'proyecto-qa', description: 'nombre del docker')
-    string(name: 'name_imagen', defaultValue: 'iproyecto-qa', description: 'nombre de la imagen')
-    string(name: 'tag_imagen', defaultValue: 'latest', description: 'etiqueta de la imagen')
-    string(name: 'puerto_imagen', defaultValue: '81', description: 'puerto a publicar')
-  }
-
-  environment {
-    name_final = "${name_container}${tag_imagen}${puerto_imagen}"        
-  }
-
-  stages {
-
-    // Stage para configurar permisos del socket de Docker
-    stage('Configure Docker Permissions') {
-      steps {
-        script {
-          sh '''
-              chmod 666 /var/run/docker.sock
-              chown $(whoami) /var/run/docker.sock
-          '''
-        }
-      }
+    parameters {
+        string(name: 'name_container', defaultValue: 'proyecto-qa', description: 'Nombre del contenedor')
+        string(name: 'name_imagen', defaultValue: 'iproyecto-qa', description: 'Nombre de la imagen')
+        string(name: 'tag_imagen', defaultValue: 'latest', description: 'Etiqueta de la imagen')
+        string(name: 'puerto_imagen', defaultValue: '81', description: 'Puerto a publicar')
     }
 
-    // Detener y eliminar contenedores existentes
-    stage('stop/rm') {
-      when {
-        expression { 
-          DOCKER_EXIST = sh(returnStdout: true, script: 'echo "$(docker ps -q --filter name=${name_final})"').trim()
-          return DOCKER_EXIST != '' 
-        }
-      }
-      steps {
-        script {
-          sh '''
-              docker stop ${name_final}
-          '''
-        }
-      }
+    environment {
+        name_final = "${name_container}${tag_imagen}${puerto_imagen}"
     }
 
-    // Construir la imagen Docker
-    stage('build') {
-      steps {
-        script {
-          sh '''
-              docker build -f jobs/dockerweb/Dockerfile -t ${name_imagen}:${tag_imagen} jobs/dockerweb/
-          '''
-        }
-      }
-    }
+    stages {
 
-    // Ejecutar el contenedor
-    stage('run') {
-      steps {
-        script {
-          sh '''
-              docker run -dp ${puerto_imagen}:80 --name ${name_final} ${name_imagen}:${tag_imagen}
-          '''
+        // Stage para configurar permisos del socket de Docker
+        stage('Configure Docker Permissions') {
+            steps {
+                script {
+                    sh '''
+                        sudo chmod 666 /var/run/docker.sock
+                        sudo chown $(whoami) /var/run/docker.sock
+                        ls -l /var/run/docker.sock
+                    '''
+                }
+            }
         }
-      }
+
+        // Detener y eliminar contenedores existentes
+        stage('Stop and Remove') {
+            when {
+                expression {
+                    DOCKER_EXIST = sh(returnStdout: true, script: "echo \"$(docker ps -q --filter name=${name_final})\"").trim()
+                    return DOCKER_EXIST != ''
+                }
+            }
+            steps {
+                script {
+                    sh '''
+                        docker stop ${name_final}
+                        docker rm ${name_final}
+                    '''
+                }
+            }
+        }
+
+        // Construir la imagen Docker
+        stage('Build') {
+            steps {
+                script {
+                    sh '''
+                        docker build -f jobs/dockerweb/Dockerfile -t ${name_imagen}:${tag_imagen} jobs/dockerweb/
+                    '''
+                }
+            }
+        }
+
+        // Ejecutar el contenedor
+        stage('Run') {
+            steps {
+                script {
+                    sh '''
+                        docker run -dp ${puerto_imagen}:80 --name ${name_final} ${name_imagen}:${tag_imagen}
+                    '''
+                }
+            }
+        }
+
     }
-    
-  }
 }
