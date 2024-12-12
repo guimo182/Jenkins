@@ -18,10 +18,7 @@ pipeline {
     stage('Configure Docker Permissions') {
       steps {
         script {
-          sh '''
-              chmod 666 /var/run/docker.sock
-              chown $(whoami) /var/run/docker.sock
-          '''
+            sh 'sudo chmod 666 /var/run/docker.sock'
         }
       }
     }
