@@ -19,6 +19,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                        # Asegurarse de que Jenkins pueda acceder al socket Docker sin permisos extra
                         chmod 666 /var/run/docker.sock
                         chown jenkins:docker /var/run/docker.sock
                     '''
@@ -26,7 +27,6 @@ pipeline {
             }
         }
 
-        // Detener y eliminar contenedores existentes
         stage('Stop and Remove') {
             when {
                 expression {
@@ -44,7 +44,6 @@ pipeline {
             }
         }
 
-        // Construir la imagen Docker
         stage('Build') {
             steps {
                 script {
@@ -55,7 +54,6 @@ pipeline {
             }
         }
 
-        // Ejecutar el contenedor
         stage('Run') {
             steps {
                 script {
