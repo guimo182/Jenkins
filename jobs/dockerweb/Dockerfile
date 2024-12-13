@@ -16,5 +16,6 @@ RUN a2enmod rewrite \
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip intl xmlrpc soap opcache \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd
 
+# Copiar tu aplicación al contenedor
 COPY . /var/www/html/
 WORKDIR /var/www/html/
