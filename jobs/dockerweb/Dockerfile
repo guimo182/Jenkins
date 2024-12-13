@@ -1,8 +1,6 @@
 FROM php:7.4-apache
 
-LABEL maintainer="Jaivic"
-
-# Instalar dependencias necesarias y configurar PHP
+# Habilitar mod rewrite y actualizar paquetes
 RUN a2enmod rewrite \
     && apt-get update \
     && apt-get install -y \
@@ -10,12 +8,13 @@ RUN a2enmod rewrite \
         libicu-dev \
         libxml2-dev \
         libpq-dev \
+        libzip-dev \  # Instalar libzip necesario para la extensión zip
         zip \
         curl \
         vim \
-        && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-        && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip intl xmlrpc soap opcache \
-        && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd
+    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip intl xmlrpc soap opcache \
+    && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd
 
 COPY . /var/www/html/
 WORKDIR /var/www/html/
