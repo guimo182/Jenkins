@@ -8,7 +8,7 @@ RUN a2enmod rewrite \
         libicu-dev \
         libxml2-dev \
         libpq-dev \
-        libzip-dev \  # Instalar libzip necesario para la extensión zip
+        libzip-dev \
         zip \
         curl \
         vim \
